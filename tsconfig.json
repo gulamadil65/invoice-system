@@ -1,0 +1,50 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES2020",
+    "outDir": "dist-electron",
+    "lib": [
+      "ES2020",
+      "DOM",
+      "dom.iterable",
+      "esnext"
+    ],
+    "noImplicitAny": false, 
+    "strictNullChecks": false,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "baseUrl": ".",
+     "types": ["node", "electron"],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*",
+        "./src/*"
+      ]
+    },
+    "moduleResolution": "node"
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    "electron/main.js",
+    "out/types/**/*.ts",
+    "electron"
+, "src/dist-electron/electron.js", "src/dist-electron/electron.js"  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

@@ -1,189 +1,3 @@
-// import { useEffect, useState } from 'react'
-// import { Invoice } from '../utils/storage'
-// import { supabase } from '../utils/supabaseClient'
-
-// export default function MonthlyReport() {
-//   const [invoices, setInvoices] = useState<Invoice[]>([])
-//   const [type, setType] = useState<'sale' | 'purchase'>('sale')
-//   const [fromDate, setFromDate] = useState('')
-//   const [toDate, setToDate] = useState('')
-
-//   const [grandTotal, setGrandTotal] = useState({
-//   total: 0,
-//   cash: 0,
-//   gpay: 0,
-//   card: 0,
-//   ppay: 0,
-//   credit: 0,
-// })
-
-
-//   const [totalsByDate, setTotalsByDate] = useState<{
-//     [date: string]: {
-//       total: number
-//       cash: number
-//       gpay: number
-//       card: number
-//       ppay: number
-//       credit: number
-//     }
-//   }>({})
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       const { data, error } = await supabase
-//         .from('invoices')
-//         .select('*')
-//         .eq('type', type)
-
-//       if (error) {
-//         console.error('Error fetching invoices:', error)
-//       } else {
-//         setInvoices(data as Invoice[])
-//       }
-//     }
-
-//     fetchData()
-//   }, [type])
-
-//   useEffect(() => {
-//     if (!fromDate || !toDate) return
-
-//     const filteredData = invoices.filter((inv) => {
-//       return inv.date >= fromDate && inv.date <= toDate
-//     })
-
-//     const totals: typeof totalsByDate = {}
-
-
-        
-
-//     filteredData.forEach((inv) => {
-//       if (!totals[inv.date]) {
-//         totals[inv.date] = {
-//           total: 0,
-//           cash: 0,
-//           gpay: 0,
-//           card: 0,
-//           ppay: 0,
-//           credit: 0,
-//         }
-//       }
-
-//       totals[inv.date].total += inv.totalPaid
-
-//       inv.payments?.forEach((p) => {
-//         const amt = parseFloat(p.amount || '0')
-//         switch (p.mode.toUpperCase()) {
-//           case 'CASH': totals[inv.date].cash += amt; break
-//           case 'G PAY': totals[inv.date].gpay += amt; break
-//           case 'CARD': totals[inv.date].card += amt; break
-//           case 'P PAY': totals[inv.date].ppay += amt; break
-//           case 'CREDIT': totals[inv.date].credit += amt; break
-//         }
-//       })
-//     })
-
-//     setTotalsByDate(totals)
-//     const grand = {
-//         total: 0,
-//         cash: 0,
-//         gpay: 0,
-//         card: 0,
-//         ppay: 0,
-//         credit: 0
-//       }
-
-//       Object.values(totals).forEach(day => {
-//         grand.total += day.total
-//         grand.cash += day.cash
-//         grand.gpay += day.gpay
-//         grand.card += day.card
-//         grand.ppay += day.ppay
-//         grand.credit += day.credit
-//       })
-
-//       setGrandTotal(grand)
-
-//   }, [fromDate, toDate, invoices])
-
-//   return (
-//     <div className="p-6">
-//       <h2 className="text-2xl font-bold mb-4">Monthly Report</h2>
-
-//       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-//         <div>
-//           <label className="block mb-1">From Date:</label>
-//           <input
-//             type="date"
-//             className="border p-2 w-full"
-//             value={fromDate}
-//             onChange={(e) => setFromDate(e.target.value)}
-//           />
-//         </div>
-//         <div>
-//           <label className="block mb-1">To Date:</label>
-//           <input
-//             type="date"
-//             className="border p-2 w-full"
-//             value={toDate}
-//             onChange={(e) => setToDate(e.target.value)}
-//           />
-//         </div>
-//         <div>
-//           <label className="block mb-1">Type:</label>
-//           <select
-//             className="border p-2 w-full"
-//             value={type}
-//             onChange={(e) => setType(e.target.value as 'sale' | 'purchase')}
-//           >
-//             <option value="sale">Sale</option>
-//             <option value="purchase">Purchase</option>
-//           </select>
-//         </div>
-//       </div>
-
-//           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-//       <div className="bg-blue-100 p-4 rounded">Total: ₹{grandTotal.total.toFixed(2)}</div>
-//       <div className="bg-green-100 p-4 rounded">Cash: ₹{grandTotal.cash.toFixed(2)}</div>
-//       <div className="bg-yellow-100 p-4 rounded">G PAY: ₹{grandTotal.gpay.toFixed(2)}</div>
-//       <div className="bg-purple-100 p-4 rounded">CARD: ₹{grandTotal.card.toFixed(2)}</div>
-//       <div className="bg-pink-100 p-4 rounded">P PAY: ₹{grandTotal.ppay.toFixed(2)}</div>
-//       <div className="bg-red-100 p-4 rounded">CREDIT: ₹{grandTotal.credit.toFixed(2)}</div>
-//       </div>
-
-
-//       <table className="w-full border-collapse border">
-//         <thead>
-//           <tr className="bg-gray-200">
-//             <th className="border p-2">Date</th>
-//             <th className="border p-2">Total</th>
-//             <th className="border p-2">Cash</th>
-//             <th className="border p-2">G PAY</th>
-//             <th className="border p-2">CARD</th>
-//             <th className="border p-2">P PAY</th>
-//             <th className="border p-2">CREDIT</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {Object.entries(totalsByDate)
-//             .sort(([a], [b]) => a.localeCompare(b))
-//             .map(([date, total], idx) => (
-//               <tr key={idx}>
-//                 <td className="border p-2">{date}</td>
-//                 <td className="border p-2">₹{total.total.toFixed(2)}</td>
-//                 <td className="border p-2">₹{total.cash.toFixed(2)}</td>
-//                 <td className="border p-2">₹{total.gpay.toFixed(2)}</td>
-//                 <td className="border p-2">₹{total.card.toFixed(2)}</td>
-//                 <td className="border p-2">₹{total.ppay.toFixed(2)}</td>
-//                 <td className="border p-2">₹{total.credit.toFixed(2)}</td>
-//               </tr>
-//             ))}
-//         </tbody>
-//       </table>
-//     </div>
-//   )
-// }
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../utils/supabaseClient'
@@ -192,22 +6,30 @@ export default function MonthlyReport() {
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const [totalsByDate, setTotalsByDate] = useState<{
-    [date: string]: {
-      total: number
-      cash: number
-      gpay: number
-      card: number
-      ppay: number
-      credit: number
+      [date: string]: {
+    total: number
+    cash: number
+    gpayHyder: number
+    pnbBox: number
+    ppay: number
+    gpaySohail: number
+    gpayAdil: number
+    bank: number
+    card: number
+    credit: number
     }
   }>({})
   const [grandTotal, setGrandTotal] = useState({
-    total: 0,
-    cash: 0,
-    gpay: 0,
-    card: 0,
-    ppay: 0,
-    credit: 0
+     total: 0,
+  cash: 0,
+  gpayHyder: 0,
+  pnbBox: 0,
+  ppay: 0,
+  gpaySohail: 0,
+  gpayAdil: 0,
+  bank: 0,
+  card: 0,
+  credit: 0,
   })
 
   useEffect(() => {
@@ -216,7 +38,7 @@ export default function MonthlyReport() {
     const fetchData = async () => {
       const { data, error } = await supabase
         .from('daily_reports')
-        .select('date, total_sales, cash_in_hand, gpay, card, ppay, credit')
+        .select('date, total_sales, cash_in_hand,gpay_hyder, pnb_box, ppay,gpay_sohail, gpay_adil, bank, card, credit')
         .gte('date', fromDate)
         .lte('date', toDate)
 
@@ -229,24 +51,34 @@ export default function MonthlyReport() {
       data?.forEach((day) => {
         totals[day.date] = {
           total: day.total_sales || 0,
-          cash: day.cash_in_hand || 0, // ✅ Now using cash_in_hand
-          gpay: day.gpay || 0,
-          card: day.card || 0,
+          cash: day.cash_in_hand || 0,
+          gpayHyder: day.gpay_hyder || 0,
+          pnbBox: day.pnb_box || 0,
           ppay: day.ppay || 0,
-          credit: day.credit || 0
+          gpaySohail: day.gpay_sohail || 0,
+          gpayAdil: day.gpay_adil || 0,
+          bank: day.bank || 0,
+          card: day.card || 0,
+          credit: day.credit || 0,
         }
       })
 
       setTotalsByDate(totals)
 
       // Calculate grand totals
-      const grand = { total: 0, cash: 0, gpay: 0, card: 0, ppay: 0, credit: 0 }
+      const grand = { total: 0, cash: 0, gpayHyder: 0, pnbBox: 0,
+      ppay: 0, gpaySohail: 0, gpayAdil: 0,
+      bank: 0, card: 0, credit: 0 }
       Object.values(totals).forEach(day => {
         grand.total += day.total
         grand.cash += day.cash
-        grand.gpay += day.gpay
-        grand.card += day.card
+        grand.gpayHyder += day.gpayHyder
+        grand.pnbBox += day.pnbBox
         grand.ppay += day.ppay
+        grand.gpaySohail += day.gpaySohail
+        grand.gpayAdil += day.gpayAdil
+        grand.bank += day.bank
+        grand.card += day.card
         grand.credit += day.credit
       })
       setGrandTotal(grand)
@@ -256,10 +88,11 @@ export default function MonthlyReport() {
   }, [fromDate, toDate])
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Monthly Report</h2>
+    <div className="max-w-7xl mx-auto p-6 bg-white rounded-lg shadow-md text-gray-900">
+            <h2 className="text-3xl font-bold text-blue-600 text-center mb-6">Monthly Report</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        
         <div>
           <label className="block mb-1">From Date:</label>
           <input type="date" className="border p-2 w-full" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
@@ -273,40 +106,57 @@ export default function MonthlyReport() {
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-blue-100 p-4 rounded">Total: ₹{grandTotal.total.toFixed(2)}</div>
         <div className="bg-green-100 p-4 rounded">Cash in Hand: ₹{grandTotal.cash.toFixed(2)}</div>
-        <div className="bg-yellow-100 p-4 rounded">G PAY: ₹{grandTotal.gpay.toFixed(2)}</div>
-        <div className="bg-purple-100 p-4 rounded">CARD: ₹{grandTotal.card.toFixed(2)}</div>
+        <div className="bg-yellow-100 p-4 rounded">GPay Hyder: ₹{grandTotal.gpayHyder.toFixed(2)}</div>
+        <div className="bg-orange-100 p-4 rounded">PNB Box: ₹{grandTotal.pnbBox.toFixed(2)}</div>
+        <div className="bg-pink-200 p-4 rounded">GPay Sohail: ₹{grandTotal.gpaySohail.toFixed(2)}</div>
+        <div className="bg-teal-100 p-4 rounded">GPay Adil: ₹{grandTotal.gpayAdil.toFixed(2)}</div>
+        <div className="bg-indigo-100 p-4 rounded">Bank: ₹{grandTotal.bank.toFixed(2)}</div>
         <div className="bg-pink-100 p-4 rounded">P PAY: ₹{grandTotal.ppay.toFixed(2)}</div>
+        <div className="bg-purple-100 p-4 rounded">CARD: ₹{grandTotal.card.toFixed(2)}</div>
         <div className="bg-red-100 p-4 rounded">CREDIT: ₹{grandTotal.credit.toFixed(2)}</div>
+        
       </div>
-
-      <table className="w-full border-collapse border">
-        <thead>
+      {/* table */}
+   <div className="overflow-auto rounded-lg shadow-md">
+  <table className="min-w-full divide-y divide-gray-200">
+    <thead className="bg-gray-100 text-gray-700">
           <tr className="bg-gray-200">
-            <th className="border p-2">Date</th>
-            <th className="border p-2">Total</th>
-            <th className="border p-2">Cash in Hand</th>
-            <th className="border p-2">G PAY</th>
-            <th className="border p-2">CARD</th>
-            <th className="border p-2">P PAY</th>
-            <th className="border p-2">CREDIT</th>
+            <th className="px-3 py-2 text-left text-sm font-medium">Date</th>
+            <th className="px-3 py-2 text-left text-sm font-medium">Total</th>
+            <th className="px-3 py-2 text-left text-sm font-medium">Cash in Hand</th>
+            <th className="px-3 py-2 text-left text-sm font-medium">GPay Hyder</th>
+            <th className="px-3 py-2 text-left text-sm font-medium">PNB Box</th>
+            <th className="px-3 py-2 text-left text-sm font-medium">P PAY</th>
+            <th className="px-3 py-2 text-left text-sm font-medium">GPay Sohail</th>
+            <th className="px-3 py-2 text-left text-sm font-medium">GPay Adil</th>
+            <th className="px-3 py-2 text-left text-sm font-medium">Bank</th>
+            <th className="px-3 py-2 text-left text-sm font-medium">Card</th>
+            <th className="px-3 py-2 text-left text-sm font-medium">Credit</th>
+ 
           </tr>
         </thead>
-        <tbody>
+    <tbody className="divide-y divide-gray-100">
           {Object.entries(totalsByDate)
             .sort(([a], [b]) => a.localeCompare(b))
             .map(([date, total], idx) => (
-              <tr key={idx}>
-                <td className="border p-2">{date}</td>
-                <td className="border p-2">₹{total.total.toFixed(2)}</td>
-                <td className="border p-2">₹{total.cash.toFixed(2)}</td>
-                <td className="border p-2">₹{total.gpay.toFixed(2)}</td>
-                <td className="border p-2">₹{total.card.toFixed(2)}</td>
-                <td className="border p-2">₹{total.ppay.toFixed(2)}</td>
-                <td className="border p-2">₹{total.credit.toFixed(2)}</td>
+              <tr key={idx} className="hover:bg-gray-50">
+                <td className="px-3 py-2">{date}</td>
+                <td className="px-3 py-2">₹{total.total.toFixed(2)}</td>
+                <td className="px-3 py-2">₹{total.cash.toFixed(2)}</td>
+                <td className="px-3 py-2">₹{total.gpayHyder.toFixed(2)}</td>
+                <td className="px-3 py-2">₹{total.pnbBox.toFixed(2)}</td>
+                <td className="px-3 py-2">₹{total.ppay.toFixed(2)}</td>
+                <td className="px-3 py-2">₹{total.gpaySohail.toFixed(2)}</td>
+                <td className="px-3 py-2">₹{total.gpayAdil.toFixed(2)}</td>
+                <td className="px-3 py-2">₹{total.bank.toFixed(2)}</td>
+                <td className="px-3 py-2">₹{total.card.toFixed(2)}</td>
+                <td className="px-3 py-2">₹{total.credit.toFixed(2)}</td>
+
               </tr>
             ))}
         </tbody>
       </table>
+      </div>
     </div>
   )
 }

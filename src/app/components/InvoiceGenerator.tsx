@@ -82,6 +82,7 @@ const fetchLastBillNo = async () => {
   const { data, error } = await supabase
     .from("invoices")
     .select("billNo")
+    .eq("type", "sale") 
     .order('billNo', { ascending: false }) // 👈 cast to int
     .limit(1)
     .single();
@@ -352,22 +353,24 @@ useEffect(() => {
  const findCustomerByPhone = async (phone: string) => {
   try {
     const { data, error } = await supabase
-      .from('invoices')
-      .select('*')
+      .from("invoices")
+      .select("*")
       .or(`phone1.eq.${phone},phone2.eq.${phone}`)
-      .single(); // returns one match
+      .order("created_at", { ascending: false }) // 👈 sort latest first (adjust column if needed)
+      .limit(1);
 
-    if (error) {
-      console.warn("No matching customer found:", error.message);
+    if (error || !data || data.length === 0) {
+      console.warn("No matching customer found:", error?.message);
       return null;
     }
 
-    return data;
+    return data[0]; // 👈 return first row
   } catch (err) {
     console.error("Error querying Supabase:", err);
     return null;
   }
 };
+
 
 
   
@@ -384,7 +387,7 @@ useEffect(() => {
     if (existingCustomer) {
       setFormData(prevData => ({
         ...prevData,
-        billNo: existingCustomer.billNo || '',
+        // billNo: existingCustomer.billNo || '',
         customer: existingCustomer.customer || '',
         address: existingCustomer.address || '',
         gstNo: existingCustomer.gstNo || '',
@@ -1101,7 +1104,9 @@ useEffect(() => {
     doc.setFontSize(12)
     doc.text('S.No', 10, currentY)
     doc.text('Particular', 60, currentY, { align: 'center' })
+    if (includeGST) {
     doc.text('HSN', 100, currentY)
+    }
     doc.text('Quantity', 125, currentY)
     doc.text('Price', 150, currentY)
     doc.text('Total', 175, currentY)
@@ -1124,7 +1129,9 @@ useEffect(() => {
         doc.setFontSize(12)
         doc.text('S.No', 10, currentY)
         doc.text('Particular', 60, currentY, { align: 'center' })
+        if (includeGST) {
         doc.text('HSN', 100, currentY)
+        }
         doc.text('Quantity', 125, currentY)
         doc.text('Price', 150, currentY)
         doc.text('Total', 175, currentY)
@@ -1140,7 +1147,9 @@ useEffect(() => {
       doc.setFontSize(10)
       doc.text(item.sno.toString(), 15, currentY + 1, { align: 'center' })
       doc.text(item.particulars || 'SAREE', 60, currentY + 1, { align: 'center' })
+      if (includeGST) {
       doc.text(item.hsn.toString(), 105, currentY + 1, { align: 'center' })
+      }
       doc.text(item.qty.toString(), 133, currentY + 1, { align: 'center' })
       doc.text(item.price.toString(), 155, currentY + 1, { align: 'center' })
       doc.text(item.amount.toFixed(), 180, currentY + 1, { align: 'center' })
@@ -1880,9 +1889,13 @@ useEffect(() => {
     >
       <option value="">Select</option>
       <option value="Cash">Cash</option>
-      <option value="G PAY">G PAY</option>
-      <option value="Card">Card</option>
+      <option value="G PAY hyder">G PAY Hyder</option>
+      <option value="PNB Box">PNB Box</option>
       <option value="P PAY">P PAY</option>
+      <option value="G PAY sohail">G PAY Sohail</option>
+      <option value="G PAY adil">G PAY Adil</option>
+      <option value="Bank">Bank</option>
+      <option value="Card">Card</option>
       <option value="Credit">Credit</option>
     </select>
     <input
